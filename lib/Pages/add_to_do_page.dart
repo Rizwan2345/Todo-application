@@ -1,4 +1,5 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -173,27 +174,29 @@ class _AddToDoState extends State<AddToDo> {
   Widget button(){
     return InkWell(
       onTap: ()async {
-        FirebaseFirestore.instance.collection("Todo").add({
-          "title": _titlecontroller.text,
-          "task":type.toString(),
-          "Category":category.toString(),
-          "description":_descriptioncontroller.text,
-        });
-        final QuerySnapshot querySnapshot=FirebaseFirestore.instance
-        .collection("Todo")
-        .where("_titlecontroller.text" ,isEqualTo:'title' )
-        .get() as QuerySnapshot<QueryDocumentSnapshot>;
-        final List<DocumentSnapshot> documents=
-        querySnapshot.docs.length as List<DocumentSnapshot<QueryDocumentSnapshot>>;
-        if(documents.length>0){
-          print("Does'nt Exist");
-        }else{
-          print("Exist");
-        }
-        //var querysnapshot=FirebaseFirestore.instance.collection("Todo").doc("title").get().toString().length;
-        //var length=querySnapshot.toString().length;
+        final QuerySnapshot result =
+        await FirebaseFirestore.instance.collection('Todo')
+            .where('title', isEqualTo: _titlecontroller.text)
+            .get();
 
-      },
+        final List < DocumentSnapshot > documents = result.docs;
+
+        if (documents.length > 0) {
+
+          final snackbar=SnackBar(content: Text("Title Already Exist"));
+          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+
+
+        } else {
+          await FirebaseFirestore.instance.collection("Todo").add({
+            "title": _titlecontroller.text,
+            "task":type.toString(),
+            "Category":category.toString(),
+            "description":_descriptioncontroller.text,
+          });
+          Navigator.pop(context);
+        }
+        },
       child:Container(
       height: 50,
       width: MediaQuery.of(context).size.width,
